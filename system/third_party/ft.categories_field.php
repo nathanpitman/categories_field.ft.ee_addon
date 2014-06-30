@@ -132,7 +132,7 @@ class Categories_field_ft extends EE_Fieldtype {
                     // If it has a parent assign it
                     $this->EE->db->select('parent_id');
                     $this->EE->db->where('cat_id',$cat_id);
-                    $this->EE->db->where('cat_id !=',0);
+                    $this->EE->db->where('parent_id !=',0);
                     $query = $this->EE->db->get('categories');
                     if ($query->num_rows()==1) {
                         $data[] = $query->row()->parent_id;
