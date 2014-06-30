@@ -23,6 +23,20 @@ class Categories_field_ft extends EE_Fieldtype {
         'version'      => NF_CF_VERSION
     );
 
+    function install()
+    {
+        return array(
+            'category_fields_group_id' => 1,
+            'category_fields_delimiter' => ' ', // usually pipe '|'
+            'category_fields_mute_unassigned_cats' => TRUE,
+            'category_fields_auto_assign_parents' => TRUE
+        );
+    }
+    function save_global_settings()
+    {
+        return array_merge($this->settings, $_POST);
+    }
+
     // --------------------------------------------------------------------
 
     /**
@@ -35,8 +49,6 @@ class Categories_field_ft extends EE_Fieldtype {
      */
     private function _display_field($data, $cell = FALSE)
     {
-
-        $mute_unassigned_cats = TRUE;
 
         $file = 'categories_field/styles/categories_field.css';
         $css = '<link rel="stylesheet" type="text/css" href="'.URL_THIRD_THEMES.$file.'" />';
@@ -59,7 +71,7 @@ class Categories_field_ft extends EE_Fieldtype {
             // Get Cats using the EE API
             ee()->load->library('api');
             ee()->api->instantiate('channel_categories');
-            $query = ee()->api_channel_categories->category_tree(1,$data,'c');
+            $query = ee()->api_channel_categories->category_tree($this->settings['category_fields_group_id'],$data,'c');
 
             if (ee()->input->get('entry_id')) {
                 $this->EE->db->select('cat_id');
@@ -75,7 +87,7 @@ class Categories_field_ft extends EE_Fieldtype {
 
                 // Prep data
                 if(!is_array($data)){
-                    $data = explode('|', $data);
+                    $data = explode($settings['delimiter'], $data);
                 }
 
                 // Init rows
@@ -99,9 +111,9 @@ class Categories_field_ft extends EE_Fieldtype {
 
                 foreach($query AS $row)
                 {
-                    $selected = in_array($row[0], explode('|',$data)) ? 1 : 0;
+                    $selected = in_array($row[0], explode($this->settings['category_fields_delimiter'],$data)) ? 1 : 0;
                     $position = $row[6] ? "child" : "parent";
-                    if ($mute_unassigned_cats) {
+                    if ($this->settings['category_fields_mute_unassigned_cats']) {
                         $state = in_array($row[0], $base_cats) ? "highlight" : "muted";
                     }
 
@@ -121,12 +133,10 @@ class Categories_field_ft extends EE_Fieldtype {
 
     public function save($data) {
 
-        $auto_assign_parents = TRUE;
-
         if (is_array($data)) {
 
             // Auto assign category parents?
-            if ($auto_assign_parents) {
+            if ($this->settings['category_fields_auto_assign_parents']) {
                 foreach($data AS $cat_id) {
                     // Look up each category in the DB
                     // If it has a parent assign it
@@ -143,7 +153,7 @@ class Categories_field_ft extends EE_Fieldtype {
             // Remove dupes
             $data = array_unique($data);
             // To pipe delimited string
-            $data = implode('|', $data);
+            $data = implode($this->settings['category_fields_delimiter'], $data);
 
         }
 
