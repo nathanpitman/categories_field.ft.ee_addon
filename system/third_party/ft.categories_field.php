@@ -211,4 +211,4 @@ class Categories_field_ft extends EE_Fieldtype {
     }
 }
 
-// End of file ft.low_freeform_field_ft.php
+// End of file ft.categories_field.php
