@@ -1,5 +1,5 @@
-Categories Field
-================
+EE2.x Categories Field
+======================
 
 Categories Field is an ExpressionEngine 2.x fieldtype which can be used to save category IDs to a custom channel entries field either in addition to those stored by native categories or as a replacement with a more flexibile interface that includes a 'as you type' categories search filter. It also provides the option to record a 'Primary Category', 'Auto Assign Parents' and much more.
 
