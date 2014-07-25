@@ -320,11 +320,17 @@ class Nf_categories_field_ft extends EE_Fieldtype {
 
                 }
 
-                $class .= $row[6] ? " child" : " parent";
+                // Type: Child or a parent?
+                if ($row[6]) {
+                    $type = "child";
+                } else {
+                    $type = "parent";
+                }
+
                 if ($this->settings['mute_unassigned_cats']=='y') {
                     $class .= in_array($row[0], $base_cats) ? " highlight" : " muted";
                 }
-                if ($this->settings['filter_exclude_parents']=='y' AND $row[6]) {
+                if (($this->settings['filter_exclude_parents']=='y') AND ($type == 'parent')) {
                     $class .= " exclude";
                 }
 
@@ -337,7 +343,7 @@ class Nf_categories_field_ft extends EE_Fieldtype {
                     $selected_primary_input = form_radio($field_name.'[]', 'p'.$row[0], $selected_primary);
                 }
 
-                $out .= '<label class="'.$class.'">'
+                $out .= '<label class="' . $type . ' ' . $class . '">'
                     .   form_checkbox($field_name.'[]', $row[0], $selected)
                     .   NBS .'<span>'. $row[1] . $selected_primary_label . '</span>' . $selected_primary_input . '</span></label>';
             }
