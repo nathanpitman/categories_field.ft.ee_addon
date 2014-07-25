@@ -5,10 +5,26 @@
     -moz-border-radius: 3px;
     border-radius: 3px;
     }
+.nf_category_field > legend {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    font-weight: bold;
+    background-color: #5f6c74;
+    background: #fff url(../images/thead_bg.png) repeat-x 0 1px;
+    background: -webkit-gradient(linear, 0 0, 0 100%, from(transparent), to(rgba(0,0,0,0.06)));
+    background: -moz-linear-gradient(top, transparent, rgba(0,0,0,0.06));
+    border-bottom: 1px solid #bbb;
+    border-top: 1px solid #E3E3E3;
+    text-shadow: 0 1px #fff;
+    div {
+        padding: 6px 10px 5px 10px;
+        }
+    }
 .nf_category_field > label.parent {
     font-weight: bold;
     background-color: #E1E6E9;
-    padding: 6px 5px 5px 5px;
+    padding: 6px 10px 5px 5px;
     background: #fff url(../images/thead_bg.png) repeat-x 0 1px;
     background: -webkit-gradient(linear, 0 0, 0 100%, from(transparent), to(rgba(0,0,0,0.06)));
     background: -moz-linear-gradient(top, transparent, rgba(0,0,0,0.06));
@@ -39,4 +55,30 @@
     }
 .nf_category_field > label.muted > span {
     opacity: 0.25;
+    }
+.nf_category_field > label input[type='radio'] {
+    text-align: right;
+    float: right;
+    margin: 3px;
+    padding: 0;
+    }
+.nf_category_field > label span.label {
+    margin-left: 5px;
+    background-color: #CCCCCC;
+    color: white;
+    border-radius: 3px;
+    font-size: 10px;
+    padding: 2px 4px 2px 4px;
+    }
+.nf_category_field_filter {
+    margin: 5px;
+    position: relative;
+    }
+.nf_category_field_filter a.current span.count {
+    position: absolute;
+    top: 1px;
+    right: 0;
+    padding: 4px;
+    text-align: right;
+    color: #CCCCCC;
     }
