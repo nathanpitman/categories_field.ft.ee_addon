@@ -50,9 +50,9 @@ If you have enabled the 'Primary Category Assignment' option then you can access
 
 You can also use a variable pair:
 
-  {field_name}
-    <option val="{category_id}">{category_name} (<code>{category_url_title}</code>)</option>
-  {/field_name}
+  <code>{field_name}
+    <option val="{category_id}">{category_name} ({category_url_title})</option>
+  {/field_name}</code>
 
 You have access to several variables inside the variable pair:
 
