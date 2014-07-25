@@ -3,7 +3,8 @@ categories_field.ft.ee_addon
 
 Categories Field is an ExpressionEngine 2.x fieldtype which can be used to save category IDs to a custom channel entries field either in addition to those stored by native categories or as a replacement with a more flexibile interface.
 
-*Field Settings:*
+Field Settings
+--------------
 
 **Category Groups:** You can either use one field to manage all categories across all groups or split the groups between seperate custom fields.
 
