@@ -73,4 +73,13 @@ You also have access to one parameter:
 
 - `{field_name backspace="2"}`
 
+Change Log
+----------
+
+- 1.0.0
+-- Initial release
+
+Thanks
+------
+
 This add-on was inspired by Matrix Cat Col (https://github.com/jkoivisto/matrix_cat_col), guided by the work Low has done on Low Freeform Field (https://github.com/low/low_freeform_field) and the efforts of Wes Baker on Category Select (https://github.com/wesbaker/category_select.ee2_addon). It also clearly cribs some UI elements from Pixel & Tonic Matrix (http://devot-ee.com/add-ons/matrix).
