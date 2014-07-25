@@ -48,9 +48,9 @@ If you have enabled the 'Primary Category Assignment' option then you can access
 
 You can also use a variable pair:
 
-{field_name}
+<pre>{field_name}
 <option val="{category_id}">{category_name} ({category_url_title})</option>
-{/field_name}
+{/field_name}</pre>
 
 You have access to several variables inside the variable pair:
 
@@ -63,6 +63,6 @@ You have access to several variables inside the variable pair:
 
 You also have access to one parameter:
 
-- backspace
+- `{field_name backspace="2"}`
 
 This add-on was inspired by Matrix Cat Col (https://github.com/jkoivisto/matrix_cat_col), guided by the work Low has done on Low Freeform Field (https://github.com/low/low_freeform_field) and cribs some UI elements from Pixel & Tonic Matrix (http://devot-ee.com/add-ons/matrix).
