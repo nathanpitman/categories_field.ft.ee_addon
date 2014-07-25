@@ -24,7 +24,7 @@ Field Settings
 
 - **Sync with Native Categories:** If enabled will mirror native category selections (for the specified category group only - assuming that the category group is assigned to the channel where this field appears).
 
-**Highlight Assigned Native Categories:** Useful if you want to be able to easily refer to the last saved native category assignments for an entry in a field which is not set to be synced.
+- **Highlight Assigned Native Categories:** Useful if you want to be able to easily refer to the last saved native category assignments for an entry in a field which is not set to be synced.
 
 Usage
 -----
