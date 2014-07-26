@@ -265,7 +265,7 @@ class Nf_categories_field_ft extends EE_Fieldtype {
             $out = form_hidden($field_name);
             $out .= '<div class="nf_category_field">';
             if ($this->settings['filter']=='y') {
-                $out .= '<div class="nf_category_field_filter"><input type="text" class="filter" placeholder="'.lang('nf_categories_field_filter_placeholder').'"><a class="current"><span class="count"></span></a></div>';
+                $out .= '<div class="nf_category_field_filter"><input type="text" class="filter" placeholder="'.$this->settings['filter_placeholder'].'"><a class="current"><span class="count"></span></a></div>';
             }
 
             $indent = 0;
