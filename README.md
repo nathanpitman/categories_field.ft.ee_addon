@@ -80,8 +80,7 @@ You also have access to one parameter:
 Change Log
 ----------
 
-- 1.0.0
--- Initial release
+See Releases - https://github.com/ninefour/categories_field.ft.ee_addon/releases
 
 Thanks
 ------
