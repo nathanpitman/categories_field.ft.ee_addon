@@ -19,50 +19,57 @@
     text-shadow: 0 1px #fff;
     div {
         padding: 6px 10px 5px 10px;
+        cursor: pointer;
         }
     }
-.nf_category_field > label.parent {
-    font-weight: bold;
-    background-color: #E1E6E9;
-    padding: 6px 10px 5px 5px;
-    background: #fff url(../images/thead_bg.png) repeat-x 0 1px;
-    background: -webkit-gradient(linear, 0 0, 0 100%, from(transparent), to(rgba(0,0,0,0.06)));
-    background: -moz-linear-gradient(top, transparent, rgba(0,0,0,0.06));
-    border-bottom: 1px solid #bbb;
+.nf_category_field > legend.last-child,
+.nf_category_field > legend.last {
+    border-bottom: none;
+    }
+
+.nf_category_field > div.group > label.category {
+    padding: 3px 0.75em 3px 1.5em;
+    background-color: white;
     border-top: 1px solid #E3E3E3;
     }
-.nf_category_field > label.parent:first-child {
+    .nf_category_field > div.group > label.category:last-child {
+        -webkit-border-radius: 0 0 3px 3px;
+        -moz-border-radius: 0 0 3px 3px;
+        border-radius: 0 0 3px 3px;
+        }
+.nf_category_field > div.group > label.category.level_3 {
+    padding: 3px .75em 3px 2.25em;
+    }
+.nf_category_field > div.group > label.level_1 {
+    font-weight: bold;
+    padding: 6px 0.75em 5px 0.75em;
+    background: -webkit-gradient(linear, 0 0, 0 100%, from(white), to(#EDF2F5));
+    background: -moz-linear-gradient(top, white, #EDF2F5);
+    border-top: 1px solid #E3E3E3;
+    }
+.nf_category_field > div.group > label.level_1:first-child {
     -webkit-border-radius: 3px 3px 0 0;
     -moz-border-radius: 3px 3px 0 0;
     border-radius: 3px 3px 0 0;
     border-top: none;
     }
-.nf_category_field > label.child {
-    padding: 3px .75em 3px 0.75em;
-    background-color: white;
-    border-top: 1px solid #E3E3E3;
-    }
-.nf_category_field > label.child:last-child {
-    -webkit-border-radius: 0 0 3px 3px;
-    -moz-border-radius: 0 0 3px 3px;
-    border-radius: 0 0 3px 3px;
-    }
-.nf_category_field > label.assigned_category {
+
+.nf_category_field > div.group > label.assigned_category {
     opacity: 0.5;
     }
-.nf_category_field > label.highlight > span {
+.nf_category_field > div.group > label.highlight > span {
     opacity: 1;
     }
-.nf_category_field > label.muted > span {
+.nf_category_field > div.group > label.muted > span {
     opacity: 0.25;
     }
-.nf_category_field > label input[type='radio'] {
+.nf_category_field > div.group > label input[type='radio'] {
     text-align: right;
     float: right;
     margin: 3px;
     padding: 0;
     }
-.nf_category_field > label span.label {
+.nf_category_field > div.group > label span.label {
     margin-left: 5px;
     background-color: #CCCCCC;
     color: white;

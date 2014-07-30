@@ -37,6 +37,7 @@ class Nf_categories_field_ft extends EE_Fieldtype {
                 'filter' => 'y',
                 'filter_placeholder' => lang('nf_categories_field_filter_placeholder_default'),
                 'filter_exclude_parents' => 'n',
+                'category_group_names' => 1,
                 'delimiter' => '|',
                 'wrapper' => '',
                 'mute_unassigned_cats' => 'n',
@@ -77,11 +78,18 @@ class Nf_categories_field_ft extends EE_Fieldtype {
             . '<i class="instruction_text">' . lang('nf_categories_field_filter_placeholder_instructions') . '</i>',
             $this->_build_input($data, 'filter_placeholder')
         );
-        // Categories filter placeholder
+        // Exclude Parents
         ee()->table->add_row(
             lang('nf_categories_field_filter_exclude_parents', 'nf_categories_field_filter_exclude_parents'). '<br/>'
             . '<i class="instruction_text">' . lang('nf_categories_field_filter_exclude_parents_instructions') . '</i>',
             $this->_build_radios($data, 'filter_exclude_parents')
+        );
+
+        // Show Group Names
+        ee()->table->add_row(
+            lang('nf_categories_field_category_group_names', 'nf_categories_field_category_group_names'). '<br/>'
+            . '<i class="instruction_text">' . lang('nf_categories_field_category_group_names_instructions') . '</i>',
+            $this->_build_radios($data, 'category_group_names')
         );
 
         // Fields delimiter
@@ -167,14 +175,14 @@ class Nf_categories_field_ft extends EE_Fieldtype {
     {
         $radio_yes = form_radio(
             "nf_categories_field[{$name}]",
-            'y',
-            ($data[$name] == 'y'),
+            1,
+            ($data[$name] == 1),
             "id='nf_categories_field_{$name}_y'"
         );
         $radio_no = form_radio(
             "nf_categories_field[{$name}]",
-            'n',
-            ($data[$name] == 'n'),
+            0,
+            ($data[$name] == 0),
             "id='nf_categories_field_{$name}_n'"
         );
 
@@ -234,6 +242,7 @@ class Nf_categories_field_ft extends EE_Fieldtype {
 
         static $rows;
         $entry_id = NULL;
+        $groups = array();
         $base_cats = array();
         $state = "";
         $selected_primary_input = "";
@@ -250,7 +259,15 @@ class Nf_categories_field_ft extends EE_Fieldtype {
             // Get Cats using the EE API
             ee()->load->library('api');
             ee()->api->instantiate('channel_categories');
-            $query = ee()->api_channel_categories->category_tree($this->settings['groups'],$data,'c');
+
+            foreach($this->settings['groups'] AS $group_id) {
+                // Get data for this group
+                $this->EE->db->select('group_id, site_id, group_name, sort_order, can_edit_categories');
+                $this->EE->db->where('group_id',$group_id);
+                $groups[$group_id] = $this->EE->db->get('category_groups')->row();
+                // Append categories data
+                $groups[$group_id]->categories = ee()->api_channel_categories->category_tree($group_id,$data,'c');
+            }
 
             if (ee()->input->get('entry_id')) {
                 $this->EE->db->select('cat_id');
@@ -264,92 +281,96 @@ class Nf_categories_field_ft extends EE_Fieldtype {
 
             $out = form_hidden($field_name);
             $out .= '<div class="nf_category_field">';
-            if ($this->settings['filter']=='y') {
+            if ($this->settings['filter']) {
                 $out .= '<div class="nf_category_field_filter"><input type="text" class="filter" placeholder="'.$this->settings['filter_placeholder'].'"><a class="current"><span class="count"></span></a></div>';
             }
 
-            $indent = 0;
-            $current_group_id = 0;
-            $current_parent_id = 0;
+            foreach($groups AS $group) {
 
-            foreach($query AS $row)
-            {
+                $level = 1;
+                $current_parent_id = 0;
 
-                $class = "category";
-                $selected_primary = NULL;
-                $selected_primary_label = "";
-
-                if (($current_group_id != $row[2]) AND (count($this->settings['groups'])>1)) {
-                    // This is a new group, show the title
-                    $this->EE->db->select('group_name');
-                    $this->EE->db->where('group_id',$row[2]);
-                    $cat_group = $this->EE->db->get('category_groups')->row();
-                    $rows .= '<legend><div>'.$cat_group->group_name.'</div></legend>';
-                    $current_group_id = $row[2];
-                    unset($cat_group);
+                if ($this->settings['category_group_names']) {
+                    $out .= '<legend rel="group_'.$group->group_id.'">
+                        <div>'.$group->group_name.'</div></legend>';
                 }
 
-                if (is_array($data)) {
-                    // If validation on the publish form fires the returned data is an array
-                    $selected = in_array($row[0], $data) ? 1 : 0;
-                    // Find primary category
-                    foreach($data AS $data_row) {
-                        if (substr( $data_row, 0, 1 ) === "p") {
-                            $selected_primary = ltrim($data_row,'p');
-                        }
+                $out .= '<div class="group group_'.$group->group_id.'">';
+
+                foreach($group->categories AS $row) {
+
+                    $class = "category";
+                    $selected_primary = NULL;
+                    $selected_primary_label = "";
+
+                    // Indentation/Level
+                    if ($row[6] == 0) {
+                        // Parent
+                        $level = 1;
+                    } if (($row[6] > 0) AND ($row[6]>$current_parent_id)) {
+                        // Children
+                        $current_parent_id = $row[6];
+                        $level++;
                     }
-                } else {
-                    // Otherwise it's a string
-                    if ($this->settings['sync_cats']=='y') {
-                        $selected = in_array($row[0], $base_cats) ? 1 : 0;
+
+                    if (is_array($data)) {
+                        // If validation on the publish form fires the returned data is an array
+                        $selected = in_array($row[0], $data) ? 1 : 0;
                         // Find primary category
-                        foreach ($base_cats as $data_row) {
+                        foreach($data AS $data_row) {
                             if (substr( $data_row, 0, 1 ) === "p") {
                                 $selected_primary = ltrim($data_row,'p');
                             }
                         }
                     } else {
-                        $selected = in_array($row[0], explode($this->settings['delimiter'],$data)) ? 1 : 0;
-                        // Find primary category
-                        foreach (explode($this->settings['delimiter'],$data) as $data_row) {
-                            if (substr( $data_row, 0, 1 ) === "p") {
-                                $selected_primary = ltrim($data_row,'p');
+                        // Otherwise it's a string
+                        if ($this->settings['sync_cats']) {
+                            $selected = in_array($row[0], $base_cats) ? 1 : 0;
+                            // Find primary category
+                            foreach ($base_cats as $data_row) {
+                                if (substr( $data_row, 0, 1 ) === "p") {
+                                    $selected_primary = ltrim($data_row,'p');
+                                }
+                            }
+                        } else {
+                            $selected = in_array($row[0], explode($this->settings['delimiter'],$data)) ? 1 : 0;
+                            // Find primary category
+                            foreach (explode($this->settings['delimiter'],$data) as $data_row) {
+                                if (substr( $data_row, 0, 1 ) === "p") {
+                                    $selected_primary = ltrim($data_row,'p');
+                                }
                             }
                         }
+
                     }
 
-                }
-
-                // Type: Child or a parent?
-                if ($row[6]) {
-                    $type = "child";
-                } else {
-                    $type = "parent";
-                }
-
-                if ($this->settings['mute_unassigned_cats']=='y') {
-                    $class .= in_array($row[0], $base_cats) ? " highlight" : " muted";
-                }
-                if (($this->settings['filter_exclude_parents']=='y') AND ($type == 'parent')) {
-                    $class .= " exclude";
-                }
-
-                // Primary Category?
-                if ($this->settings['primary_cat']=='y') {
-                    $selected_primary = ($row[0] == $selected_primary) ? 1 : 0;
-                    if ($selected_primary) {
-                        $selected_primary_label = '<span class="label">Primary Category</span>';
+                    if ($this->settings['mute_unassigned_cats']) {
+                        $class .= in_array($row[0], $base_cats) ? " highlight" : " muted";
                     }
-                    $selected_primary_input = form_radio($field_name.'[]', 'p'.$row[0], $selected_primary);
+                    if (($this->settings['filter_exclude_parents']) AND ($indent == 0)) {
+                        $class .= " exclude";
+                    }
+
+                    // Primary Category?
+                    if ($this->settings['primary_cat']) {
+                        $selected_primary = ($row[0] == $selected_primary) ? 1 : 0;
+                        if ($selected_primary) {
+                            $selected_primary_label = '<span class="label">Primary Category</span>';
+                        }
+                        $selected_primary_input = form_radio($field_name.'[]', 'p'.$row[0], $selected_primary);
+                    }
+
+                    $out .= '<label class="level_' . $level . ' ' . $class . '">'
+                        .   form_checkbox($field_name.'[]', $row[0], $selected)
+                        .   NBS .'<span>'. $row[1] . $selected_primary_label . '</span>' . $selected_primary_input . '</span></label>';
+
                 }
 
-                $out .= '<label class="' . $type . ' ' . $class . '">'
-                    .   form_checkbox($field_name.'[]', $row[0], $selected)
-                    .   NBS .'<span>'. $row[1] . $selected_primary_label . '</span>' . $selected_primary_input . '</span></label>';
+                $out .= '</div>';
             }
 
             $out .= '</div>';
-            if ($this->settings['sync_cats']=='y') {
+            if ($this->settings['sync_cats']) {
                 $out .= '<p>'.lang('nf_categories_field_syncs_publish_note').'</p>';
             }
             return $out;
@@ -431,7 +452,7 @@ class Nf_categories_field_ft extends EE_Fieldtype {
         $selected_cats = array_filter(explode($this->settings['delimiter'], $data)); // array_filter removes empty nodes
 
         // Just to be sure...
-        if ($this->settings['sync_cats']=='y') {
+        if ($this->settings['sync_cats']) {
 
             // Get currently assigned cats
             $this->EE->db->select('cat_id');

@@ -14,8 +14,12 @@
 'nf_categories_field_filter_placeholder' => 'Category filter placeholder text',
 'nf_categories_field_filter_placeholder_instructions' => 'You can customise the placeholder text which appears inside the filter.',
 'nf_categories_field_filter_placeholder_default' => 'Filter by category...',
+
 'nf_categories_field_filter_exclude_parents' => 'Exclude Parents from Filter',
 'nf_categories_field_filter_exclude_parents_instructions' => 'If enabled excludes top level parents from the filter, i.e. they remain visible at all times.',
+
+'nf_categories_field_category_group_names' => 'Show Category Group Names',
+'nf_categories_field_category_group_names_instructions' => 'If enabled displays category group names between category groups.',
 
 'nf_categories_field_delimiter' => 'Field Delimiter',
 'nf_categories_field_delimiter_instructions' => 'The character which is used to delimit the string of category IDs that are stored in ths custom field. i.e. "|"',

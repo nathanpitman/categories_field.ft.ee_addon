@@ -1,5 +1,10 @@
 $(document).ready(function() {
 
+    $(".nf_category_field legend").click(function(){
+        var target = "."+$(this).attr('rel');
+        $(target).toggle();
+    });
+
     $(".nf_category_field input.filter").keyup(function(){
 
         // Get the field
@@ -16,6 +21,7 @@ $(document).ready(function() {
                 $(this).not('.exclude').hide();
             // Show the list item if the phrase matches and increase the count by 1
             } else {
+                $('.nf_category_field div.group').show();
                 $(this).show();
                 count++;
             }
