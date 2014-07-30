@@ -12,7 +12,7 @@
 if ( ! defined('NF_CF_NAME'))
 {
     define('NF_CF_NAME',    'Categories Field');
-    define('NF_CF_VERSION', '1.0.1');
+    define('NF_CF_VERSION', '1.0.2');
     define('NF_CF_DOCS',    'http://github.com/ninefour/categories_field.ft.ee_addon');
 }
 

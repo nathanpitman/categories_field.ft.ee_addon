@@ -261,12 +261,24 @@ class Nf_categories_field_ft extends EE_Fieldtype {
             ee()->api->instantiate('channel_categories');
 
             foreach($this->settings['groups'] AS $group_id) {
+
                 // Get data for this group
                 $this->EE->db->select('group_id, site_id, group_name, sort_order, can_edit_categories');
                 $this->EE->db->where('group_id',$group_id);
                 $groups[$group_id] = $this->EE->db->get('category_groups')->row();
+
                 // Append categories data
                 $groups[$group_id]->categories = ee()->api_channel_categories->category_tree($group_id,$data,'c');
+
+                /* Returns:
+                    '0' =>  (int) Category ID,
+                    '1' =>  (string) Category Name,
+                    '2' =>  (int) Category Group ID,
+                    '3' =>  (string) Category Group Name,
+                    '4' =>  (bool) Selected,
+                    '5' =>  (int) Depth Nested in the Tree,
+                    '6' =>  (int) Category Parent ID
+                */
             }
 
             if (ee()->input->get('entry_id')) {
@@ -287,7 +299,6 @@ class Nf_categories_field_ft extends EE_Fieldtype {
 
             foreach($groups AS $group) {
 
-                $level = 1;
                 $current_parent_id = 0;
 
                 if ($this->settings['category_group_names']) {
@@ -302,16 +313,6 @@ class Nf_categories_field_ft extends EE_Fieldtype {
                     $class = "category";
                     $selected_primary = NULL;
                     $selected_primary_label = "";
-
-                    // Indentation/Level
-                    if ($row[6] == 0) {
-                        // Parent
-                        $level = 1;
-                    } if (($row[6] > 0) AND ($row[6]>$current_parent_id)) {
-                        // Children
-                        $current_parent_id = $row[6];
-                        $level++;
-                    }
 
                     if (is_array($data)) {
                         // If validation on the publish form fires the returned data is an array
@@ -360,7 +361,7 @@ class Nf_categories_field_ft extends EE_Fieldtype {
                         $selected_primary_input = form_radio($field_name.'[]', 'p'.$row[0], $selected_primary);
                     }
 
-                    $out .= '<label class="level_' . $level . ' ' . $class . '">'
+                    $out .= '<label class="level_' . $row[5] . ' ' . $class . '">'
                         .   form_checkbox($field_name.'[]', $row[0], $selected)
                         .   NBS .'<span>'. $row[1] . $selected_primary_label . '</span>' . $selected_primary_input . '</span></label>';
 
