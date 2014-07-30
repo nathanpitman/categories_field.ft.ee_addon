@@ -20,7 +20,7 @@ Field Settings
 
 - **Category Filter:** Useful when you have very large category groups or multiple category groups selected. Provides a live as you type filter based on category name.
 
-- **Category filter placeholder text:** You can customise the placeholder text which appears inside the filter.
+- **Category Filter Placeholder Text:** You can customise the placeholder text which appears inside the filter.
 
 - **Exclude Parents from Filter:** If enabled excludes top level parents from the filter, i.e. they remain visible at all times.
 
