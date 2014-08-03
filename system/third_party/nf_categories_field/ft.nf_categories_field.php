@@ -450,7 +450,12 @@ class Nf_categories_field_ft extends EE_Fieldtype {
 
     public function post_save($data) {
 
-        $selected_cats = array_filter(explode($this->settings['delimiter'], $data)); // array_filter removes empty nodes
+        if (!empty($data)) {
+            // array_filter removes empty nodes
+            $selected_cats = array_filter(explode($this->settings['delimiter'], $data));
+        } else {
+            $selected_cats = array();
+        }
 
         // Just to be sure...
         if ($this->settings['sync_cats']) {
@@ -459,8 +464,12 @@ class Nf_categories_field_ft extends EE_Fieldtype {
             $this->EE->db->select('cat_id');
             $this->EE->db->where('entry_id', $this->settings['entry_id']);
             $current_cats_array = $this->EE->db->get('category_posts')->result_array();
-            foreach($current_cats_array AS $current_cat) {
-                $current_cats[] = $current_cat['cat_id'];
+            if (!empty($current_cats_array)) {
+                foreach($current_cats_array AS $current_cat) {
+                    $current_cats[] = $current_cat['cat_id'];
+                }
+            } else {
+                $current_cats = array();
             }
 
             // Trash cats is current cats minus any selected cats
