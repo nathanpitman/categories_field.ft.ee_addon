@@ -368,7 +368,7 @@ class Nf_categories_field_ft extends EE_Fieldtype {
                         $selected_primary_input = form_radio($field_name.'[]', 'p'.$row[0], $selected_primary);
                     }
 
-                    $out .= '<label class="level_' . $row[5] . ' ' . $class . '">'
+                    $out .= '<label class="level_' . $row[5] . ' ' . $class . '" title="ID: '.$row[0].'">'
                         .   form_checkbox($field_name.'[]', $row[0], $selected)
                         .   NBS .'<span>'. $row[1] . $selected_primary_label . '</span>' . $selected_primary_input . '</span></label>';
 
