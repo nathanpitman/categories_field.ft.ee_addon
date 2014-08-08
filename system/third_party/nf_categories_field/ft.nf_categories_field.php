@@ -314,8 +314,9 @@ class Nf_categories_field_ft extends EE_Fieldtype {
                     $selected_primary = NULL;
                     $selected_primary_label = "";
 
+                    // If validation on the publish form fires we get an array
                     if (is_array($data)) {
-                        // If validation on the publish form fires the returned data is an array
+
                         $selected = in_array($row[0], $data) ? 1 : 0;
                         // Find primary category
                         foreach($data AS $data_row) {
@@ -323,21 +324,26 @@ class Nf_categories_field_ft extends EE_Fieldtype {
                                 $selected_primary = ltrim($data_row,'p');
                             }
                         }
+
+                    // Otherwise it's a string
                     } else {
-                        // Otherwise it's a string
+
+                        // With categories synced
                         if ($this->settings['sync_cats']) {
                             $selected = in_array($row[0], $base_cats) ? 1 : 0;
                             // Find primary category
-                            foreach ($base_cats as $data_row) {
-                                if (substr( $data_row, 0, 1 ) === "p") {
-                                    $selected_primary = ltrim($data_row,'p');
+                            foreach ($base_cats AS $base_row) {
+                                if (strpos($data, "p".$base_row)) {
+                                    $selected_primary = $base_row;
                                 }
                             }
+
+                        // Without categories synced
                         } else {
                             $selected = in_array($row[0], explode($this->settings['delimiter'],$data)) ? 1 : 0;
                             // Find primary category
-                            foreach (explode($this->settings['delimiter'],$data) as $data_row) {
-                                if (substr( $data_row, 0, 1 ) === "p") {
+                            foreach (explode($this->settings['delimiter'],$data) AS $data_row) {
+                                if (substr($data_row, 0, 1 ) === "p") {
                                     $selected_primary = ltrim($data_row,'p');
                                 }
                             }
@@ -355,6 +361,7 @@ class Nf_categories_field_ft extends EE_Fieldtype {
                     // Primary Category?
                     if ($this->settings['primary_cat']) {
                         $selected_primary = ($row[0] == $selected_primary) ? 1 : 0;
+                        //echo($selected_primary);
                         if ($selected_primary) {
                             $selected_primary_label = '<span class="label">Primary Category</span>';
                         }
@@ -453,6 +460,12 @@ class Nf_categories_field_ft extends EE_Fieldtype {
         if (!empty($data)) {
             // array_filter removes empty nodes
             $selected_cats = array_filter(explode($this->settings['delimiter'], $data));
+            // remove any primary cats (we only record these in the custom field itself)
+            foreach($selected_cats AS $selected_cat_key=>$selected_cat_value) {
+                if (substr( $selected_cat_value, 0, 1 ) === "p") {
+                    unset($selected_cats[$selected_cat_key]);
+                }
+            }
         } else {
             $selected_cats = array();
         }
