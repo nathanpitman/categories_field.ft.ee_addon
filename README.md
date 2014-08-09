@@ -53,8 +53,9 @@ This will either display a single category ID or a piped list (e.g. `1|3|17`).
 
 - `{field_name:primary_category_id}`
 - `{field_name:primary_category_name}`
+- `{field_name:primary_category_parent_id}`
   
-If you have enabled the 'Primary Category Assignment' option then you can access the ID and/or name of the primary category using these tags.
+If you have enabled the 'Primary Category Assignment' option then you can access the ID and/or name of the primary category and the ID of it's parent (or itself if it has no parent) using these tags.
 
 ### Variable Pair
 
