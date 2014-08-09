@@ -526,8 +526,8 @@ class Nf_categories_field_ft extends EE_Fieldtype {
         $settings = (isset($this->settings['nf_categories_field'])) ? $this->settings['nf_categories_field'] : $this->settings;
         $settings = $this->_default_settings($settings);
 
-        // Explode the category string to an array
-        $categories = array_filter(explode($settings['delimiter'], $data));
+        // array_filter removes empty nodes, array_values re-indexes
+        $categories = array_values(array_filter(explode($settings['delimiter'], $data)));
         // Remove the primary category (if set)
         if (substr( $categories[0], 0, 1 ) === "p") {
             unset($categories[0]);
@@ -554,8 +554,8 @@ class Nf_categories_field_ft extends EE_Fieldtype {
         return $parsed;
     }
 
-    // {field_name:primary_id}
-    function replace_primary_id($data, $params = array(), $tagdata = FALSE)
+    // {field_name:primary_category_id}
+    function replace_primary_category_id($data, $params = array(), $tagdata = FALSE)
     {
 
         // Establish Settings
@@ -563,7 +563,8 @@ class Nf_categories_field_ft extends EE_Fieldtype {
         $settings = $this->_default_settings($settings);
 
         $primary_cat_id = FALSE;
-        $categories = array_filter(explode($settings['delimiter'], $data));
+        // array_filter removes empty nodes, array_values re-indexes
+        $categories = array_values(array_filter(explode($settings['delimiter'], $data)));
 
         if (substr( $categories[0], 0, 1 ) === "p") {
             $primary_cat_id = ltrim($categories[0],'p');
@@ -572,8 +573,8 @@ class Nf_categories_field_ft extends EE_Fieldtype {
         return $primary_cat_id;
     }
 
-    // {field_name:primary_name}
-    function replace_primary_name($data, $params = array(), $tagdata = FALSE)
+    // {field_name:primary_category_name}
+    function replace_primary_category_name($data, $params = array(), $tagdata = FALSE)
     {
 
         // Establish Settings
@@ -581,7 +582,8 @@ class Nf_categories_field_ft extends EE_Fieldtype {
         $settings = $this->_default_settings($settings);
 
         $primary_cat_name = FALSE;
-        $categories = array_filter(explode($settings['delimiter'], $data));
+        // array_filter removes empty nodes, array_values re-indexes
+        $categories = array_values(array_filter(explode($settings['delimiter'], $data)));
 
         if (substr( $categories[0], 0, 1 ) === "p") {
             $primary_cat_id = ltrim($categories[0],'p');
