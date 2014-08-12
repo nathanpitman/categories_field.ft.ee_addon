@@ -35,4 +35,9 @@ $(document).ready(function() {
         }
     });
 
+    // Ensure that primary categories are checked too
+    $('.nf_category_field input[type="radio"]').click(function(){
+        $(this).parent().find('input[type="checkbox"]').prop('checked', true);
+    });
+
 });

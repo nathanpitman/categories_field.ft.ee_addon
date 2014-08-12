@@ -399,10 +399,11 @@ class Nf_categories_field_ft extends EE_Fieldtype {
             $primary_cat = NULL;
 
             // Find our primary cat (if one is set)
-            foreach($data AS $selected_cat) {
+            foreach($data AS $selected_cat_key=>$selected_cat_value) {
                 // Ooh, look here, that's our primary cat
-                if (substr( $selected_cat, 0, 1 ) === "p") {
-                    $primary_cat =  $selected_cat;
+                if (substr( $selected_cat_value, 0, 1 ) === "p") {
+                    $primary_cat =  $selected_cat_value;
+                    $data[$selected_cat_key] = ltrim($selected_cat_value,'p');
                 }
             }
 
@@ -595,6 +596,35 @@ class Nf_categories_field_ft extends EE_Fieldtype {
         }
 
         return $primary_cat_name;
+    }
+
+    // {field_name:primary_category_parent_id}
+    function replace_primary_category_parent_id($data, $params = array(), $tagdata = FALSE)
+    {
+
+        // Establish Settings
+        $settings = (isset($this->settings['nf_categories_field'])) ? $this->settings['nf_categories_field'] : $this->settings;
+        $settings = $this->_default_settings($settings);
+
+        $primary_cat_name = FALSE;
+        // array_filter removes empty nodes, array_values re-indexes
+        $categories = array_values(array_filter(explode($settings['delimiter'], $data)));
+
+        if (substr( $categories[0], 0, 1 ) === "p") {
+            $primary_cat_id = ltrim($categories[0],'p');
+            $primary_cat = $this->_get_category_data(array($primary_cat_id));
+
+            if ($primary_cat[0]) {
+                // If there's a parent return it's ID, else return this categories ID
+                if ($primary_cat[0]['category_parent_id']==0) {
+                    return $primary_cat[0]['category_id'];
+                } else {
+                    return $primary_cat[0]['category_parent_id'];
+                }
+            }
+        }
+
+        return;
     }
 
     /**
