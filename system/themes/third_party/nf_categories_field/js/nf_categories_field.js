@@ -29,7 +29,11 @@ $(document).ready(function() {
 
         // Update the count
         if (filter) {
-            $(field).find('a > span.count').text("("+count+" matches for current filter)");
+            if (count!=1) {
+                $(field).find('a > span.count').text("("+count+" matches for current filter)");
+            } else {
+                $(field).find('a > span.count').text("("+count+" match for current filter)");
+            }
         } else {
             $(field).find('a > span.count').text("");
         }

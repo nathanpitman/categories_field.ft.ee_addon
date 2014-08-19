@@ -38,6 +38,7 @@ class Nf_categories_field_ft extends EE_Fieldtype {
                 'filter_placeholder' => lang('nf_categories_field_filter_placeholder_default'),
                 'filter_exclude_parents' => 'n',
                 'category_group_names' => 1,
+                'collapse_category_groups' => 0,
                 'delimiter' => '|',
                 'wrapper' => '',
                 'mute_unassigned_cats' => 'n',
@@ -90,6 +91,13 @@ class Nf_categories_field_ft extends EE_Fieldtype {
             lang('nf_categories_field_category_group_names', 'nf_categories_field_category_group_names'). '<br/>'
             . '<i class="instruction_text">' . lang('nf_categories_field_category_group_names_instructions') . '</i>',
             $this->_build_radios($data, 'category_group_names')
+        );
+
+        // Collapse Category Groups
+        ee()->table->add_row(
+            lang('nf_categories_field_collapse_category_groups', 'nf_categories_field_collapse_category_groups'). '<br/>'
+            . '<i class="instruction_text">' . lang('nf_categories_field_collapse_category_groups_instructions') . '</i>',
+            $this->_build_radios($data, 'collapse_category_groups')
         );
 
         // Fields delimiter
@@ -293,7 +301,7 @@ class Nf_categories_field_ft extends EE_Fieldtype {
 
             $out = form_hidden($field_name);
             $out .= '<div class="nf_category_field">';
-            if ($this->settings['filter']) {
+            if (isset($this->settings['filter']) AND $this->settings['filter']) {
                 $out .= '<div class="nf_category_field_filter"><input type="text" class="filter" placeholder="'.$this->settings['filter_placeholder'].'"><a class="current"><span class="count"></span></a></div>';
             }
 
@@ -301,12 +309,16 @@ class Nf_categories_field_ft extends EE_Fieldtype {
 
                 $current_parent_id = 0;
 
-                if ($this->settings['category_group_names']) {
+                if (isset($this->settings['category_group_names']) AND $this->settings['category_group_names']) {
                     $out .= '<legend rel="group_'.$group->group_id.'">
                         <div>'.$group->group_name.'</div></legend>';
                 }
 
-                $out .= '<div class="group group_'.$group->group_id.'">';
+                if (isset($this->settings['collapse_category_groups']) AND $this->settings['collapse_category_groups']) {
+                    $out .= '<div class="group group_'.$group->group_id.'" style="display: none;">';
+                } else {
+                    $out .= '<div class="group group_'.$group->group_id.'">';
+                }
 
                 foreach($group->categories AS $row) {
 
@@ -329,7 +341,7 @@ class Nf_categories_field_ft extends EE_Fieldtype {
                     } else {
 
                         // With categories synced
-                        if ($this->settings['sync_cats']) {
+                        if (isset($this->settings['sync_cats']) AND $this->settings['sync_cats']) {
                             $selected = in_array($row[0], $base_cats) ? 1 : 0;
                             // Find primary category
                             foreach ($base_cats AS $base_row) {
@@ -351,7 +363,7 @@ class Nf_categories_field_ft extends EE_Fieldtype {
 
                     }
 
-                    if ($this->settings['mute_unassigned_cats']) {
+                    if (isset($this->settings['mute_unassigned_cats']) AND $this->settings['mute_unassigned_cats']) {
                         $class .= in_array($row[0], $base_cats) ? " highlight" : " muted";
                     }
                     if (($this->settings['filter_exclude_parents']) AND ($indent == 0)) {
@@ -359,7 +371,7 @@ class Nf_categories_field_ft extends EE_Fieldtype {
                     }
 
                     // Primary Category?
-                    if ($this->settings['primary_cat']) {
+                    if (isset($this->settings['primary_cat']) AND $this->settings['primary_cat']) {
                         $selected_primary = ($row[0] == $selected_primary) ? 1 : 0;
                         //echo($selected_primary);
                         if ($selected_primary) {
@@ -378,7 +390,7 @@ class Nf_categories_field_ft extends EE_Fieldtype {
             }
 
             $out .= '</div>';
-            if ($this->settings['sync_cats']) {
+            if (isset($this->settings['sync_cats']) AND $this->settings['sync_cats']) {
                 $out .= '<p>'.lang('nf_categories_field_syncs_publish_note').'</p>';
             }
             return $out;
@@ -472,7 +484,7 @@ class Nf_categories_field_ft extends EE_Fieldtype {
         }
 
         // Just to be sure...
-        if ($this->settings['sync_cats']) {
+        if (isset($this->settings['sync_cats']) AND $this->settings['sync_cats']) {
 
             // Get currently assigned cats
             $this->EE->db->select('cat_id');
