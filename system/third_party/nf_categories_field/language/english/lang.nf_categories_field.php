@@ -22,7 +22,7 @@
 'nf_categories_field_category_group_names_instructions' => 'If enabled displays category group names between category groups.',
 
 'nf_categories_field_collapse_category_groups' => 'Collapse Category Groups',
-'nf_categories_field_collapse_category_groups_instructions' => 'If enabled category groups are collapsed by default.',
+'nf_categories_field_collapse_category_groups_instructions' => 'If enabled category groups are collapsed by default in the control panel interface.',
 
 'nf_categories_field_delimiter' => 'Field Delimiter',
 'nf_categories_field_delimiter_instructions' => 'The character which is used to delimit the string of category IDs that are stored in ths custom field. i.e. "|"',
