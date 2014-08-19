@@ -26,7 +26,7 @@ Field Settings
 
 - **Show Category Group Names:** If enabled displays category group names between category groups. Useful when you have a categories field set to display multiple category groups.
 
-- **Collapse Category Groups:** If enabled category groups are collapsed by default.
+- **Collapse Category Groups:** If enabled category groups are collapsed by default in the control panel interface.
 
 - **Field Delimiter:** The character which is used to delimit the string of category IDs that are stored in ths custom field. i.e. "|"
 
