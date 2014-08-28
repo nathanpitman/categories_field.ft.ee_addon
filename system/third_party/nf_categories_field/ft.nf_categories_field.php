@@ -579,7 +579,7 @@ class Nf_categories_field_ft extends EE_Fieldtype {
         // array_filter removes empty nodes, array_values re-indexes
         $categories = array_values(array_filter(explode($settings['delimiter'], $data)));
 
-        if (substr( $categories[0], 0, 1 ) === "p") {
+        if ($categories AND substr( $categories[0], 0, 1 ) === "p") {
             $primary_cat_id = ltrim($categories[0],'p');
         }
 
