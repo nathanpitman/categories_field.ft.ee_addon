@@ -326,6 +326,10 @@ class Nf_categories_field_ft extends EE_Fieldtype {
                     $selected_primary = NULL;
                     $selected_primary_label = "";
 
+                    /*echo('<pre>');
+                    print_r($this->settings);
+                    exit;*/
+
                     // If validation on the publish form fires we get an array
                     if (is_array($data)) {
 
@@ -340,24 +344,11 @@ class Nf_categories_field_ft extends EE_Fieldtype {
                     // Otherwise it's a string
                     } else {
 
-                        // With categories synced
-                        if (isset($this->settings['sync_cats']) AND $this->settings['sync_cats']) {
-                            $selected = in_array($row[0], $base_cats) ? 1 : 0;
-                            // Find primary category
-                            foreach ($base_cats AS $base_row) {
-                                if (strpos($data, "p".$base_row)) {
-                                    $selected_primary = $base_row;
-                                }
-                            }
-
-                        // Without categories synced
-                        } else {
-                            $selected = in_array($row[0], explode($this->settings['delimiter'],$data)) ? 1 : 0;
-                            // Find primary category
-                            foreach (explode($this->settings['delimiter'],$data) AS $data_row) {
-                                if (substr($data_row, 0, 1 ) === "p") {
-                                    $selected_primary = ltrim($data_row,'p');
-                                }
+                        $selected = in_array($row[0], explode($this->settings['delimiter'],$data)) ? 1 : 0;
+                        // Find primary category
+                        foreach (explode($this->settings['delimiter'],$data) AS $data_row) {
+                            if (substr($data_row, 0, 1 ) === "p") {
+                                $selected_primary = ltrim($data_row,'p');
                             }
                         }
 
@@ -610,6 +601,30 @@ class Nf_categories_field_ft extends EE_Fieldtype {
         return $primary_cat_name;
     }
 
+    // {field_name:primary_category_url_title}
+    function replace_primary_category_url_title($data, $params = array(), $tagdata = FALSE)
+    {
+
+        // Establish Settings
+        $settings = (isset($this->settings['nf_categories_field'])) ? $this->settings['nf_categories_field'] : $this->settings;
+        $settings = $this->_default_settings($settings);
+
+        $primary_cat_url_title = FALSE;
+        // array_filter removes empty nodes, array_values re-indexes
+        $categories = array_values(array_filter(explode($settings['delimiter'], $data)));
+
+        if (substr( $categories[0], 0, 1 ) === "p") {
+            $primary_cat_id = ltrim($categories[0],'p');
+            $primary_cat = $this->_get_category_data(array($primary_cat_id));
+
+            if ($primary_cat[0]) {
+                $primary_cat_url_title = $primary_cat[0]['category_url_title'];
+            }
+        }
+
+        return $primary_cat_url_title;
+    }
+
     // {field_name:primary_category_parent_id}
     function replace_primary_category_parent_id($data, $params = array(), $tagdata = FALSE)
     {
@@ -696,10 +711,10 @@ class Nf_categories_field_ft extends EE_Fieldtype {
      * @param   string
      * @return  string
      */
-    /*public function display_cell($cell_data)
+    public function display_cell($cell_data)
     {
         return $this->_display_field($cell_data, TRUE);
-    }*/
+    }
 
     /**
      * Displays the field in Low Variables
