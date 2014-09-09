@@ -8,7 +8,7 @@ Categories Field is an ExpressionEngine 2.x fieldtype which can be used to save 
 Install
 -------
 
-1. Download the repository
+1. Download the [latest release](https://github.com/ninefour/categories_field.ft.ee_addon/releases)
 2. Move third\_party/nf\_categories\_field to expressionengine/third\_party
 3. Move themes/third\_party/nf\_categories\_field to expressionengine/themes
 4. Install the field type from the ExpressionEngine control panel
