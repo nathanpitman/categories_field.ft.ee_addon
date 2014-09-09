@@ -84,9 +84,10 @@ You have access to several variables inside the variable pair:
 - `{category_description}`
 - `{category_image}`
 
-You also have access to one parameter:
+You also have access to these parameters:
 
 - `{field_name backspace="2"}`
+- `{field_name limit="1"}`
 
 Change Log
 ----------

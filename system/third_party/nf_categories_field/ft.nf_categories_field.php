@@ -520,6 +520,9 @@ class Nf_categories_field_ft extends EE_Fieldtype {
     // {field_name}{/field_name}
     function replace_tag($data, $params = array(), $tagdata = FALSE) {
 
+        // Defaults
+        $limit = NULL;
+
         // Establish Settings
         $settings = (isset($this->settings['nf_categories_field'])) ? $this->settings['nf_categories_field'] : $this->settings;
         $settings = $this->_default_settings($settings);
@@ -537,10 +540,16 @@ class Nf_categories_field_ft extends EE_Fieldtype {
             return is_array($categories) ? implode($settings['delimiter'], $categories) : $categories;
         }
 
-        // Loop over the tag pair for each category, parsing the {category_id} tags
+        // Limit parameter
+        if (isset($params['limit']) && $params['limit'])
+        {
+            $limit = $params['limit'];
+        }
+
+        // Loop over the tag pair for each category, parsing the tags
         $parsed = ee()->TMPL->parse_variables(
             $tagdata,
-            $this->_get_category_data($categories)
+            $this->_get_category_data($categories, $limit)
         );
 
         // Backspace parameter
@@ -660,30 +669,26 @@ class Nf_categories_field_ft extends EE_Fieldtype {
      * @return Array          Array of data read for the parser containing
      *                        category IDs, names, and url_titles
      */
-    private function _get_category_data($cat_ids)
+    private function _get_category_data($cat_ids, $limit=NULL, $group_id=NULL)
     {
         // Pull in category data and map it
         ee()->load->model('category_model');
+        ee()->db->limit($limit);
         $category_query = ee()->db->where_in('cat_id', $cat_ids)
             ->get('categories')
             ->result_array();
-        $category_data = array();
-        foreach ($category_query as $data)
-        {
-            $category_data[$data['cat_id']] = $data;
-        }
 
         // Create the array for parsing
         $parse = array();
-        foreach ($cat_ids as $category_id)
+        foreach ($category_query as $category_row)
         {
             $parse[] = array(
-                'category_id' => $category_id,
-                'category_parent_id' => $category_data[$category_id]['parent_id'],
-                'category_name' => $category_data[$category_id]['cat_name'],
-                'category_url_title' => $category_data[$category_id]['cat_url_title'],
-                'category_description' => $category_data[$category_id]['cat_description'],
-                'category_image' => $category_data[$category_id]['cat_image']
+                'category_id' => $category_row['cat_id'],
+                'category_parent_id' => $category_row['parent_id'],
+                'category_name' => $category_row['cat_name'],
+                'category_url_title' => $category_row['cat_url_title'],
+                'category_description' => $category_row['cat_description'],
+                'category_image' => $category_row['cat_image']
             );
         }
 
