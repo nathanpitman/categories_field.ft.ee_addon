@@ -3,7 +3,6 @@
 // Get config file
 require(PATH_THIRD.'nf_categories_field/config.php');
 
-
 /**
  * Categories Field Fieldtype
  *
@@ -326,11 +325,7 @@ class Nf_categories_field_ft extends EE_Fieldtype {
                     $selected_primary = NULL;
                     $selected_primary_label = "";
 
-                    /*echo('<pre>');
-                    print_r($this->settings);
-                    exit;*/
-
-                    // If validation on the publish form fires we get an array
+                    // If validation on the publish form fires we get an array back
                     if (is_array($data)) {
 
                         $selected = in_array($row[0], $data) ? 1 : 0;
@@ -364,7 +359,6 @@ class Nf_categories_field_ft extends EE_Fieldtype {
                     // Primary Category?
                     if (isset($this->settings['primary_cat']) AND $this->settings['primary_cat']) {
                         $selected_primary = ($row[0] == $selected_primary) ? 1 : 0;
-                        //echo($selected_primary);
                         if ($selected_primary) {
                             $selected_primary_label = '<span class="label">Primary Category</span>';
                         }
@@ -558,100 +552,106 @@ class Nf_categories_field_ft extends EE_Fieldtype {
         return $parsed;
     }
 
-    // {field_name:primary_category_id}
-    function replace_primary_category_id($data, $params = array(), $tagdata = FALSE)
+    // {field_name:modifier} AND/OR {field_name:modifier:attribute}
+    function replace_tag_catchall($data, $params = array(), $tagdata = FALSE, $modifier)
     {
 
         // Establish Settings
         $settings = (isset($this->settings['nf_categories_field'])) ? $this->settings['nf_categories_field'] : $this->settings;
         $settings = $this->_default_settings($settings);
 
-        $primary_cat_id = FALSE;
-        // array_filter removes empty nodes, array_values re-indexes
-        $categories = array_values(array_filter(explode($settings['delimiter'], $data)));
+        // Get modifier parts
+        $parts = explode(":", $modifier);
 
-        if ($categories AND substr( $categories[0], 0, 1 ) === "p") {
-            $primary_cat_id = ltrim($categories[0],'p');
-        }
+        // If part 1 is {field_name:primary_category...
+        if ($parts[0]=="primary_category") {
 
-        return $primary_cat_id;
-    }
+            $primary_category_id = FALSE;
+            $primary_category_parent_id = FALSE;
+            $primary_category_name = FALSE;
+            $primary_category_url_title = FALSE;
+            $primary_category_description = FALSE;
+            $primary_category_image = FALSE;
 
-    // {field_name:primary_category_name}
-    function replace_primary_category_name($data, $params = array(), $tagdata = FALSE)
-    {
+            // array_filter removes empty nodes, array_values re-indexes
+            $categories = array_values(array_filter(explode($settings['delimiter'], $data)));
 
-        // Establish Settings
-        $settings = (isset($this->settings['nf_categories_field'])) ? $this->settings['nf_categories_field'] : $this->settings;
-        $settings = $this->_default_settings($settings);
+            if ($categories AND substr( $categories[0], 0, 1 ) === "p") {
 
-        $primary_cat_name = FALSE;
-        // array_filter removes empty nodes, array_values re-indexes
-        $categories = array_values(array_filter(explode($settings['delimiter'], $data)));
+                $primary_category_id = ltrim($categories[0],'p');
 
-        if (substr( $categories[0], 0, 1 ) === "p") {
-            $primary_cat_id = ltrim($categories[0],'p');
-            $primary_cat = $this->_get_category_data(array($primary_cat_id));
+                // If there is an attribute request {field_name:primary_category:something}
+                if (isset($parts[1])) {
 
-            if ($primary_cat[0]) {
-                $primary_cat_name = $primary_cat[0]['category_name'];
-            }
-        }
+                    // Get extra category data
+                    $primary_category = $this->_get_category_data(array($primary_category_id));
 
-        return $primary_cat_name;
-    }
+                    if (!is_array($primary_category[0])) {
+                        return FALSE;
+                    } else {
 
-    // {field_name:primary_category_url_title}
-    function replace_primary_category_url_title($data, $params = array(), $tagdata = FALSE)
-    {
+                        switch ($parts[1]) {
 
-        // Establish Settings
-        $settings = (isset($this->settings['nf_categories_field'])) ? $this->settings['nf_categories_field'] : $this->settings;
-        $settings = $this->_default_settings($settings);
+                            // {field_name:primary_category:id}
+                            case 'id':
+                                return $primary_category_id;
+                                break;
 
-        $primary_cat_url_title = FALSE;
-        // array_filter removes empty nodes, array_values re-indexes
-        $categories = array_values(array_filter(explode($settings['delimiter'], $data)));
+                            // {field_name:primary_category:name}
+                            case 'name':
+                                $primary_category_name = $primary_category[0]['category_name'];
+                                return $primary_category_name;
+                                break;
 
-        if (substr( $categories[0], 0, 1 ) === "p") {
-            $primary_cat_id = ltrim($categories[0],'p');
-            $primary_cat = $this->_get_category_data(array($primary_cat_id));
+                            // {field_name:primary_category:url_title}
+                            case 'url_title':
+                                $primary_category_url_title = $primary_category[0]['category_url_title'];
+                                return $primary_category_url_title;
+                                break;
 
-            if ($primary_cat[0]) {
-                $primary_cat_url_title = $primary_cat[0]['category_url_title'];
-            }
-        }
+                            // {field_name:primary_category:description}
+                            case 'description':
+                                $primary_category_description = $primary_category[0]['category_description'];
+                                return $primary_category_description;
+                                break;
 
-        return $primary_cat_url_title;
-    }
+                            // {field_name:primary_category:image}
+                            case 'image':
+                                $primary_category_image = $primary_category[0]['category_image'];
+                                return $primary_category_image;
+                                break;
 
-    // {field_name:primary_category_parent_id}
-    function replace_primary_category_parent_id($data, $params = array(), $tagdata = FALSE)
-    {
+                            // {field_name:primary_category:parent_id}
+                            case 'parent_id':
+                                // If there's a parent return it's ID, else return this categories ID
+                                if ($primary_category[0]['category_parent_id']==0) {
+                                    $primary_category_parent_id = $primary_category[0]['category_id'];
+                                } else {
+                                    $primary_category_parent_id = $primary_category[0]['category_parent_id'];
+                                }
+                                return $primary_category_parent_id;
+                                break;
 
-        // Establish Settings
-        $settings = (isset($this->settings['nf_categories_field'])) ? $this->settings['nf_categories_field'] : $this->settings;
-        $settings = $this->_default_settings($settings);
+                        }
 
-        $primary_cat_name = FALSE;
-        // array_filter removes empty nodes, array_values re-indexes
-        $categories = array_values(array_filter(explode($settings['delimiter'], $data)));
+                    }
 
-        if (substr( $categories[0], 0, 1 ) === "p") {
-            $primary_cat_id = ltrim($categories[0],'p');
-            $primary_cat = $this->_get_category_data(array($primary_cat_id));
-
-            if ($primary_cat[0]) {
-                // If there's a parent return it's ID, else return this categories ID
-                if ($primary_cat[0]['category_parent_id']==0) {
-                    return $primary_cat[0]['category_id'];
+                // Just return the default without any attribute preference
                 } else {
-                    return $primary_cat[0]['category_parent_id'];
+
+                    if ($categories AND substr( $categories[0], 0, 1 ) === "p") {
+                        $primary_category_id = ltrim($categories[0],'p');
+                    }
+
+                    // {field_name:primary_category}
+                    return $primary_category_id;
+
                 }
+
             }
+
         }
 
-        return;
     }
 
     /**
@@ -705,43 +705,10 @@ class Nf_categories_field_ft extends EE_Fieldtype {
         return $this->_display_field($field_data);
     }
 
-    /**
-     * Displays the field in matrix
-     *
-     * @param   string
-     * @return  string
-     */
-    public function display_cell($cell_data)
-    {
-        return $this->_display_field($cell_data, TRUE);
-    }
-
-    /**
-     * Displays the field in Low Variables
-     *
-     * @param   string
-     * @return  string
-     */
-    public function display_var_field($var_data)
-    {
-        return $this->_display_field($var_data);
-    }
-
-    /**
-     * Displays the field in Grid
-     *
-     * @param   string
-     * @return  string
-     */
-    public function grid_display_field($grid_data)
-    {
-        return $this->_display_field($grid_data);
-    }
-
     // --------------------------------------------------------------------
 
     /**
-     * Allow in Grid
+     * Allowed Content Types
      *
      * @param   string
      * @return  bool
@@ -749,12 +716,9 @@ class Nf_categories_field_ft extends EE_Fieldtype {
     public function accepts_content_type($name)
     {
         return in_array($name, array(
-            'channel',
-            'grid',
-            'low_variables'
+            'channel'
         ));
     }
-
 
     /**
      * Include CSS theme to CP header
@@ -775,6 +739,7 @@ class Nf_categories_field_ft extends EE_Fieldtype {
             }
         }
     }
+
     /**
      * Include JS theme to CP header
      *
