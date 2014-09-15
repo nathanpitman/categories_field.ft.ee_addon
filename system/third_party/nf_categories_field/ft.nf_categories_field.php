@@ -319,56 +319,58 @@ class Nf_categories_field_ft extends EE_Fieldtype {
                     $out .= '<div class="group group_'.$group->group_id.'">';
                 }
 
-                foreach($group->categories AS $row) {
+                if (!empty($group->categories)) {
+                    foreach($group->categories AS $row) {
 
-                    $class = "category";
-                    $selected_primary = NULL;
-                    $selected_primary_label = "";
+                        $class = "category";
+                        $selected_primary = NULL;
+                        $selected_primary_label = "";
 
-                    // If validation on the publish form fires we get an array back
-                    if (is_array($data)) {
+                        // If validation on the publish form fires we get an array back
+                        if (is_array($data)) {
 
-                        $selected = in_array($row[0], $data) ? 1 : 0;
-                        // Find primary category
-                        foreach($data AS $data_row) {
-                            if (substr( $data_row, 0, 1 ) === "p") {
-                                $selected_primary = ltrim($data_row,'p');
+                            $selected = in_array($row[0], $data) ? 1 : 0;
+                            // Find primary category
+                            foreach($data AS $data_row) {
+                                if (substr( $data_row, 0, 1 ) === "p") {
+                                    $selected_primary = ltrim($data_row,'p');
+                                }
                             }
-                        }
 
-                    // Otherwise it's a string
-                    } else {
+                        // Otherwise it's a string
+                        } else {
 
-                        $selected = in_array($row[0], explode($this->settings['delimiter'],$data)) ? 1 : 0;
-                        // Find primary category
-                        foreach (explode($this->settings['delimiter'],$data) AS $data_row) {
-                            if (substr($data_row, 0, 1 ) === "p") {
-                                $selected_primary = ltrim($data_row,'p');
+                            $selected = in_array($row[0], explode($this->settings['delimiter'],$data)) ? 1 : 0;
+                            // Find primary category
+                            foreach (explode($this->settings['delimiter'],$data) AS $data_row) {
+                                if (substr($data_row, 0, 1 ) === "p") {
+                                    $selected_primary = ltrim($data_row,'p');
+                                }
                             }
+
                         }
 
-                    }
-
-                    if (isset($this->settings['mute_unassigned_cats']) AND $this->settings['mute_unassigned_cats']) {
-                        $class .= in_array($row[0], $base_cats) ? " highlight" : " muted";
-                    }
-                    if (($this->settings['filter_exclude_parents']) AND ($indent == 0)) {
-                        $class .= " exclude";
-                    }
-
-                    // Primary Category?
-                    if (isset($this->settings['primary_cat']) AND $this->settings['primary_cat']) {
-                        $selected_primary = ($row[0] == $selected_primary) ? 1 : 0;
-                        if ($selected_primary) {
-                            $selected_primary_label = '<span class="label">Primary Category</span>';
+                        if (isset($this->settings['mute_unassigned_cats']) AND $this->settings['mute_unassigned_cats']) {
+                            $class .= in_array($row[0], $base_cats) ? " highlight" : " muted";
                         }
-                        $selected_primary_input = form_radio($field_name.'[]', 'p'.$row[0], $selected_primary);
+                        if (($this->settings['filter_exclude_parents']) AND ($indent == 0)) {
+                            $class .= " exclude";
+                        }
+
+                        // Primary Category?
+                        if (isset($this->settings['primary_cat']) AND $this->settings['primary_cat']) {
+                            $selected_primary = ($row[0] == $selected_primary) ? 1 : 0;
+                            if ($selected_primary) {
+                                $selected_primary_label = '<span class="label">Primary Category</span>';
+                            }
+                            $selected_primary_input = form_radio($field_name.'[]', 'p'.$row[0], $selected_primary);
+                        }
+
+                        $out .= '<label class="level_' . $row[5] . ' ' . $class . '" title="ID: '.$row[0].'">'
+                            .   form_checkbox($field_name.'[]', $row[0], $selected)
+                            .   NBS .'<span>'. $row[1] . $selected_primary_label . '</span>' . $selected_primary_input . '</span></label>';
+
                     }
-
-                    $out .= '<label class="level_' . $row[5] . ' ' . $class . '" title="ID: '.$row[0].'">'
-                        .   form_checkbox($field_name.'[]', $row[0], $selected)
-                        .   NBS .'<span>'. $row[1] . $selected_primary_label . '</span>' . $selected_primary_input . '</span></label>';
-
                 }
 
                 $out .= '</div>';
