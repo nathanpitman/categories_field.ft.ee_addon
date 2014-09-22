@@ -225,6 +225,16 @@ class Nf_categories_field_ft extends EE_Fieldtype {
         $settings['field_show_fmt'] = 'n';
         $settings['field_type'] = 'nf_categories_field';
 
+        $field_name = "field_id_".$settings['field_id'];
+
+        if ($settings['sync_cats']) {
+            ee()->db->where($field_name, '');
+            ee()->db->update('channel_data', array($field_name => 'EMPTY'));
+        } else {
+            ee()->db->where($field_name, 'EMPTY');
+            ee()->db->update('channel_data', array($field_name => ''));
+        }
+
         return $settings;
     }
 
@@ -289,13 +299,15 @@ class Nf_categories_field_ft extends EE_Fieldtype {
             }
 
             if (ee()->input->get('entry_id')) {
-                $this->EE->db->select('cat_id');
-                $this->EE->db->where('entry_id',ee()->input->get('entry_id'));
-                $base_cats_query = $this->EE->db->get('category_posts');
-                foreach($base_cats_query->result() AS $base_cat) {
-                    $base_cats[] = $base_cat->cat_id;
+
+                // Get the existing category assignments for this entry
+                $base_cats = $this->_get_base_category_ids(ee()->input->get('entry_id'));
+
+                // If $data is empty and we're syncing with native categories
+                if (empty($data) AND isset($this->settings['sync_cats']) AND $this->settings['sync_cats']) {
+                    // Overwrite data with our delimited string
+                    $data = implode($base_cats,$this->settings['delimiter']);
                 }
-                unset($base_cats_query);
             }
 
             $out = form_hidden($field_name);
@@ -508,6 +520,24 @@ class Nf_categories_field_ft extends EE_Fieldtype {
 
     }
 
+/** OUTPUT **/
+
+    // Pre-process DB data once before we run replace_tag for each row.
+    function pre_process($data) {
+
+        // Establish Settings
+        $settings = (isset($this->settings['nf_categories_field'])) ? $this->settings['nf_categories_field'] : $this->settings;
+        $settings = $this->_default_settings($settings);
+
+        // Handle empty data
+        if (($data=='EMPTY') AND (isset($this->settings['sync_cats']) AND $this->settings['sync_cats'])) {
+            // Overwrite data with our delimited string
+            $base_cats = $this->_get_base_category_ids($this->row['entry_id']);
+            $data = implode($base_cats,$settings['delimiter']);
+        }
+        return $data;
+    }
+
     /**
      * Replace tag
      *
@@ -519,8 +549,13 @@ class Nf_categories_field_ft extends EE_Fieldtype {
      *
      */
 
-    // {field_name}{/field_name}
+    // {field_name} OR {field_name}{/field_name}
     function replace_tag($data, $params = array(), $tagdata = FALSE) {
+
+        // {if field_name}
+        if (empty($data)) {
+            return FALSE;
+        }
 
         // Defaults
         $limit = NULL;
@@ -536,8 +571,8 @@ class Nf_categories_field_ft extends EE_Fieldtype {
             unset($categories[0]);
         }
 
-        // If there's no tagdata then return
-        if (empty($tagdata))
+        // If there's no tagdata (single tag) then return
+        if (!$tagdata OR empty($tagdata))
         {
             return is_array($categories) ? implode($settings['delimiter'], $categories) : $categories;
         }
@@ -559,8 +594,9 @@ class Nf_categories_field_ft extends EE_Fieldtype {
         {
             $parsed = substr($parsed, 0, -$params['backspace']);
         }
-
+        unset($tagdata);
         return $parsed;
+
     }
 
     // {field_name:modifier} AND/OR {field_name:modifier:attribute}
@@ -574,96 +610,101 @@ class Nf_categories_field_ft extends EE_Fieldtype {
         // Get modifier parts
         $parts = explode(":", $modifier);
 
-        // If part 1 is {field_name:primary_category...
-        if ($parts[0]=="primary_category") {
+        switch($parts[0]) {
 
-            $primary_category_id = FALSE;
-            $primary_category_parent_id = FALSE;
-            $primary_category_name = FALSE;
-            $primary_category_url_title = FALSE;
-            $primary_category_description = FALSE;
-            $primary_category_image = FALSE;
+            // If part 1 is {field_name:primary_category...
+            case 'primary_category':
 
-            // array_filter removes empty nodes, array_values re-indexes
-            $categories = array_values(array_filter(explode($settings['delimiter'], $data)));
+                $primary_category_id = FALSE;
+                $primary_category_parent_id = FALSE;
+                $primary_category_name = FALSE;
+                $primary_category_url_title = FALSE;
+                $primary_category_description = FALSE;
+                $primary_category_image = FALSE;
 
-            if ($categories AND substr( $categories[0], 0, 1 ) === "p") {
+                // array_filter removes empty nodes, array_values re-indexes
+                $categories = array_values(array_filter(explode($settings['delimiter'], $data)));
 
-                $primary_category_id = ltrim($categories[0],'p');
+                if ($categories AND substr( $categories[0], 0, 1 ) === "p") {
 
-                // If there is an attribute request {field_name:primary_category:something}
-                if (isset($parts[1])) {
+                    $primary_category_id = ltrim($categories[0],'p');
 
-                    // Get extra category data
-                    $primary_category = $this->_get_category_data(array($primary_category_id));
+                    // If there is an attribute request {field_name:primary_category:something}
+                    if (isset($parts[1])) {
 
-                    if (!is_array($primary_category[0])) {
-                        return FALSE;
-                    } else {
+                        // Get extra category data
+                        $primary_category = $this->_get_category_data(array($primary_category_id));
 
-                        switch ($parts[1]) {
+                        if (!is_array($primary_category[0])) {
+                            return FALSE;
+                        } else {
 
-                            // {field_name:primary_category:id}
-                            case 'id':
-                                return $primary_category_id;
-                                break;
+                            switch ($parts[1]) {
 
-                            // {field_name:primary_category:name}
-                            case 'name':
-                                $primary_category_name = $primary_category[0]['category_name'];
-                                return $primary_category_name;
-                                break;
+                                // {field_name:primary_category:id}
+                                case 'id':
+                                    return $primary_category_id;
+                                    break;
 
-                            // {field_name:primary_category:url_title}
-                            case 'url_title':
-                                $primary_category_url_title = $primary_category[0]['category_url_title'];
-                                return $primary_category_url_title;
-                                break;
+                                // {field_name:primary_category:name}
+                                case 'name':
+                                    $primary_category_name = $primary_category[0]['category_name'];
+                                    return $primary_category_name;
+                                    break;
 
-                            // {field_name:primary_category:description}
-                            case 'description':
-                                $primary_category_description = $primary_category[0]['category_description'];
-                                return $primary_category_description;
-                                break;
+                                // {field_name:primary_category:url_title}
+                                case 'url_title':
+                                    $primary_category_url_title = $primary_category[0]['category_url_title'];
+                                    return $primary_category_url_title;
+                                    break;
 
-                            // {field_name:primary_category:image}
-                            case 'image':
-                                $primary_category_image = $primary_category[0]['category_image'];
-                                return $primary_category_image;
-                                break;
+                                // {field_name:primary_category:description}
+                                case 'description':
+                                    $primary_category_description = $primary_category[0]['category_description'];
+                                    return $primary_category_description;
+                                    break;
 
-                            // {field_name:primary_category:parent_id}
-                            case 'parent_id':
-                                // If there's a parent return it's ID, else return this categories ID
-                                if ($primary_category[0]['category_parent_id']==0) {
-                                    $primary_category_parent_id = $primary_category[0]['category_id'];
-                                } else {
-                                    $primary_category_parent_id = $primary_category[0]['category_parent_id'];
-                                }
-                                return $primary_category_parent_id;
-                                break;
+                                // {field_name:primary_category:image}
+                                case 'image':
+                                    $primary_category_image = $primary_category[0]['category_image'];
+                                    return $primary_category_image;
+                                    break;
+
+                                // {field_name:primary_category:parent_id}
+                                case 'parent_id':
+                                    // If there's a parent return it's ID, else return this categories ID
+                                    if ($primary_category[0]['category_parent_id']==0) {
+                                        $primary_category_parent_id = $primary_category[0]['category_id'];
+                                    } else {
+                                        $primary_category_parent_id = $primary_category[0]['category_parent_id'];
+                                    }
+                                    return $primary_category_parent_id;
+                                    break;
+
+                            }
 
                         }
 
+                    // Just return the default without any attribute preference
+                    } else {
+
+                        if ($categories AND substr( $categories[0], 0, 1 ) === "p") {
+                            $primary_category_id = ltrim($categories[0],'p');
+                        }
+
+                        // {field_name:primary_category}
+                        return $primary_category_id;
+
                     }
-
-                // Just return the default without any attribute preference
-                } else {
-
-                    if ($categories AND substr( $categories[0], 0, 1 ) === "p") {
-                        $primary_category_id = ltrim($categories[0],'p');
-                    }
-
-                    // {field_name:primary_category}
-                    return $primary_category_id;
 
                 }
 
-            }
-
+            break;
         }
 
     }
+
+/** HELPER FUNCTIONS **/
 
     /**
      * Given a list of category IDs, returns
@@ -695,6 +736,29 @@ class Nf_categories_field_ft extends EE_Fieldtype {
         }
 
         return $parse;
+    }
+
+    private function _get_base_category_ids($entry_id)
+    {
+
+        if (! isset($this->cache['base_category_ids'][$entry_id]))
+        {
+
+            // Gets existing native category assignments
+            ee()->db->select('cat_id');
+            ee()->db->where('entry_id',$entry_id);
+            $query = ee()->db->get('category_posts');
+            foreach($query->result() AS $category) {
+                $base_category_ids[] = $category->cat_id;
+            }
+            unset($query);
+
+            $this->cache['base_category_ids'][$entry_id] = $base_category_ids;
+
+        }
+
+        return $this->cache['base_category_ids'][$entry_id];
+
     }
 
     // --------------------------------------------------------------------
