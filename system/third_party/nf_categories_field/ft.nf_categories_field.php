@@ -225,14 +225,16 @@ class Nf_categories_field_ft extends EE_Fieldtype {
         $settings['field_show_fmt'] = 'n';
         $settings['field_type'] = 'nf_categories_field';
 
-        $field_name = "field_id_".$settings['field_id'];
-
-        if ($settings['sync_cats']) {
-            ee()->db->where($field_name, '');
-            ee()->db->update('channel_data', array($field_name => 'EMPTY'));
-        } else {
-            ee()->db->where($field_name, 'EMPTY');
-            ee()->db->update('channel_data', array($field_name => ''));
+        // Only set the empty field value for existing fields
+        if(!empty($settings['field_id'])) {
+            $field_name = "field_id_".$settings['field_id'];
+            if ($settings['sync_cats']) {
+                ee()->db->where($field_name, '');
+                ee()->db->update('channel_data', array($field_name => 'EMPTY'));
+            } else {
+                ee()->db->where($field_name, 'EMPTY');
+                ee()->db->update('channel_data', array($field_name => ''));
+            }
         }
 
         return $settings;
