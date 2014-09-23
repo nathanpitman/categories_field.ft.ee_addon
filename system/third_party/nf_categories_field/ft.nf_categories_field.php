@@ -746,6 +746,8 @@ class Nf_categories_field_ft extends EE_Fieldtype {
         if (! isset($this->cache['base_category_ids'][$entry_id]))
         {
 
+            $base_category_ids = array();
+
             // Gets existing native category assignments
             ee()->db->select('cat_id');
             ee()->db->where('entry_id',$entry_id);
