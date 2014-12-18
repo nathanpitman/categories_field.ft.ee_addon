@@ -488,8 +488,8 @@ class Nf_categories_field_ft extends EE_Fieldtype {
         if (isset($this->settings['sync_cats']) AND $this->settings['sync_cats']) {
 
             // Get currently assigned cats
-            $this->EE->db->select('cat_id');
-            $this->EE->db->where('entry_id', $this->settings['entry_id']);
+            $this->EE->db->select('cat_id')
+                ->where('entry_id', $this->settings['entry_id']);
             $current_cats_array = $this->EE->db->get('category_posts')->result_array();
             if (!empty($current_cats_array)) {
                 foreach($current_cats_array AS $current_cat) {
@@ -503,8 +503,10 @@ class Nf_categories_field_ft extends EE_Fieldtype {
             $trash_cats = array_diff($current_cats, $selected_cats);
 
             // Delete trash rows
-            foreach($trash_cats as $trash_cat){
-                $this->EE->db->delete('category_posts', array('entry_id' => $this->settings['entry_id'], 'cat_id' => $trash_cat));
+            if (!empty($trash_cats)) {
+                $this->EE->db->where('entry_id', $this->settings['entry_id'])
+                    ->where_in('cat_id', $trash_cats)
+                    ->delete('category_posts');
             }
 
             // Insert new rows
@@ -566,6 +568,12 @@ class Nf_categories_field_ft extends EE_Fieldtype {
         $settings = (isset($this->settings['nf_categories_field'])) ? $this->settings['nf_categories_field'] : $this->settings;
         $settings = $this->_default_settings($settings);
 
+        // Gets field data from Publisher tables if this is a draft
+        if (isset(ee()->publisher_lib) AND ee()->publisher_lib->status=='draft') {
+            // Get field data from Publisher tables instead
+            $data = $this->_get_publisher_field_data($this->content_id, $this->settings['field_name']);
+        }
+
         // array_filter removes empty nodes, array_values re-indexes
         $categories = array_values(array_filter(explode($settings['delimiter'], $data)));
         // Remove the primary category (if set)
@@ -611,6 +619,12 @@ class Nf_categories_field_ft extends EE_Fieldtype {
 
         // Get modifier parts
         $parts = explode(":", $modifier);
+
+        // Gets field data from Publisher tables if this is a draft
+        if (isset(ee()->publisher_lib) AND ee()->publisher_lib->status=='draft') {
+            // Get field data from Publisher tables instead
+            $data = $this->_get_publisher_field_data($this->content_id, $this->settings['field_name']);
+        }
 
         switch($parts[0]) {
 
@@ -690,18 +704,21 @@ class Nf_categories_field_ft extends EE_Fieldtype {
                     // Just return the default without any attribute preference
                     } else {
 
-                        if ($categories AND substr( $categories[0], 0, 1 ) === "p") {
-                            $primary_category_id = ltrim($categories[0],'p');
-                        }
-
-                        // {field_name:primary_category}
-                        return $primary_category_id;
+                        // {if {field_name:primary_category}} ...
+                        return TRUE;
 
                     }
 
+                } else {
+                    return FALSE;
                 }
 
-            break;
+                break;
+
+            default:
+                return FALSE;
+                break;
+
         }
 
     }
@@ -762,6 +779,31 @@ class Nf_categories_field_ft extends EE_Fieldtype {
         }
 
         return $this->cache['base_category_ids'][$entry_id];
+
+    }
+
+    private function _get_publisher_field_data($entry_id, $field_id)
+    {
+
+        if (! isset($this->cache['publisher_field_data'][$entry_id][$field_id]))
+        {
+
+            $data = array();
+
+            // Gets existing native category assignments
+            $field_name = "field_id_".$field_id;
+            $query = ee()->db->select($field_name)
+                ->where('entry_id', $entry_id)
+                ->where('publisher_status', 'draft')
+                ->get('publisher_data');
+            $data = $query->row()->$field_name;
+            unset($query);
+
+            $this->cache['publisher_field_data'][$entry_id][$field_id] = $data;
+
+        }
+
+        return $this->cache['publisher_field_data'][$entry_id][$field_id];
 
     }
 
