@@ -83,6 +83,7 @@ You have access to several variables inside the variable pair:
 - `{category_url_title}`
 - `{category_description}`
 - `{category_image}`
+- `{category_custom_field_name}`
 
 You also have access to these parameters:
 

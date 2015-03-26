@@ -7,8 +7,8 @@ require(PATH_THIRD.'nf_categories_field/config.php');
  * Categories Field Fieldtype
  *
  * @package        nf_categories_field
- * @author         Nathan Pitman <nathan@ninefour.co.uk>
- * @copyright      Copyright (c) 2014, Nine Four Ltd
+ * @author         Nathan Pitman, <hello@nathanpitman.com>
+ * @copyright      Copyright (c) 2015, NAthan Pitman
  */
 class Nf_categories_field_ft extends EE_Fieldtype {
 
@@ -731,20 +731,33 @@ class Nf_categories_field_ft extends EE_Fieldtype {
      * @return Array          Array of data read for the parser containing
      *                        category IDs, names, and url_titles
      */
-    private function _get_category_data($cat_ids, $limit=NULL, $group_id=NULL)
+    private function _get_category_data($cat_ids, $limit=NULL, $group_id=NULL, $with_custom_fields=TRUE)
     {
         // Pull in category data and map it
         ee()->load->model('category_model');
+
+        // Get the standard field data (including the custom field data)
+        ee()->db->from('categories c');
+        ee()->db->join('category_field_data cfd', 'cfd.cat_id=c.cat_id', 'left');
         ee()->db->limit($limit);
-        $category_query = ee()->db->where_in('cat_id', $cat_ids)
-            ->get('categories')
-            ->result_array();
+        ee()->db->where_in('c.cat_id', $cat_ids);
+        $category_query = ee()->db->get()->result_array();
+
+        // Get the custom field names
+        ee()->db->from('category_fields cf');
+        if ($group_id) {
+            ee()->db->where('cf.group_id', $group_id);
+        }
+        $custom_fields_query = ee()->db->get()->result_array();
 
         // Create the array for parsing
         $parse = array();
+        $i = 0;
         foreach ($category_query as $category_row)
         {
-            $parse[] = array(
+
+            // Standard category fields
+            $parse[$i] = array(
                 'category_id' => $category_row['cat_id'],
                 'category_parent_id' => $category_row['parent_id'],
                 'category_name' => $category_row['cat_name'],
@@ -752,6 +765,14 @@ class Nf_categories_field_ft extends EE_Fieldtype {
                 'category_description' => $category_row['cat_description'],
                 'category_image' => $category_row['cat_image']
             );
+
+            // Add custom fields
+            foreach($custom_fields_query AS $custom_field) {
+                $custom_field_name = "field_id_".$custom_field['field_id'];
+                $parse[$i][$custom_field['field_name']] = $category_row[$custom_field_name];
+            }
+
+            $i++;
         }
 
         return $parse;
