@@ -628,15 +628,8 @@ class Nf_categories_field_ft extends EE_Fieldtype {
 
         switch($parts[0]) {
 
-            // If part 1 is {field_name:primary_category...
-            case 'primary_category':
-
-                $primary_category_id = FALSE;
-                $primary_category_parent_id = FALSE;
-                $primary_category_name = FALSE;
-                $primary_category_url_title = FALSE;
-                $primary_category_description = FALSE;
-                $primary_category_image = FALSE;
+            // If part 1 is {field_name:primary...
+            case 'primary':
 
                 // array_filter removes empty nodes, array_values re-indexes
                 $categories = array_values(array_filter(explode($settings['delimiter'], $data)));
@@ -645,7 +638,7 @@ class Nf_categories_field_ft extends EE_Fieldtype {
 
                     $primary_category_id = ltrim($categories[0],'p');
 
-                    // If there is an attribute request {field_name:primary_category:something}
+                    // If there is an attribute request {field_name:primary:something}
                     if (isset($parts[1])) {
 
                         // Get extra category data
@@ -655,70 +648,54 @@ class Nf_categories_field_ft extends EE_Fieldtype {
                             return FALSE;
                         } else {
 
-                            switch ($parts[1]) {
+                                if (array_key_exists($parts[1], $primary_category[0])) {
 
-                                // {field_name:primary_category:id}
-                                case 'id':
-                                    return $primary_category_id;
-                                    break;
+                                    switch ($parts[1]) {
 
-                                // {field_name:primary_category:name}
-                                case 'name':
-                                    $primary_category_name = $primary_category[0]['category_name'];
-                                    return $primary_category_name;
-                                    break;
+                                        // {field_name:primary:category_id}
+                                        case 'id':
+                                            return $primary_category_id;
+                                            break;
 
-                                // {field_name:primary_category:url_title}
-                                case 'url_title':
-                                    $primary_category_url_title = $primary_category[0]['category_url_title'];
-                                    return $primary_category_url_title;
-                                    break;
+                                        // {field_name:primary:category_parent_id}
+                                        case 'parent_id':
+                                            // If there's a parent return it's ID, else return this categories ID
+                                            if ($primary_category[0]['category_parent_id']==0) {
+                                                $primary_category_parent_id = $primary_category[0]['category_id'];
+                                            } else {
+                                                $primary_category_parent_id = $primary_category[0]['category_parent_id'];
+                                            }
+                                            return $primary_category_parent_id;
+                                            break;
 
-                                // {field_name:primary_category:description}
-                                case 'description':
-                                    $primary_category_description = $primary_category[0]['category_description'];
-                                    return $primary_category_description;
-                                    break;
+                                        // {field_name:primary:category_ ... }
+                                        default:
+                                            // This includes custom category fields
+                                            return $primary_category[0][$parts[1]];
 
-                                // {field_name:primary_category:image}
-                                case 'image':
-                                    $primary_category_image = $primary_category[0]['category_image'];
-                                    return $primary_category_image;
-                                    break;
-
-                                // {field_name:primary_category:parent_id}
-                                case 'parent_id':
-                                    // If there's a parent return it's ID, else return this categories ID
-                                    if ($primary_category[0]['category_parent_id']==0) {
-                                        $primary_category_parent_id = $primary_category[0]['category_id'];
-                                    } else {
-                                        $primary_category_parent_id = $primary_category[0]['category_parent_id'];
                                     }
-                                    return $primary_category_parent_id;
-                                    break;
 
-                            }
+                                } else {
+                                    return FALSE;
+                                }
 
                         }
 
                     // Just return the default without any attribute preference
                     } else {
 
-                        // {if {field_name:primary_category}} ...
-                        return TRUE;
+                        // {if {field_name:primary}} ...
+                        if ($categories AND substr( $categories[0], 0, 1 ) === "p") {
+                            return ltrim($categories[0],'p');
+                        } else {
+                            return FALSE;
+                        }
 
                     }
 
-                } else {
-                    return FALSE;
                 }
 
-                break;
-
-            default:
-                return FALSE;
-                break;
-
+            break;
         }
 
     }

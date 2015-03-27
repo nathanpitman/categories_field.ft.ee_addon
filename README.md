@@ -54,18 +54,19 @@ When displaying the field on the front end, you can use the following single var
 
 This will either display a single category ID or a piped list if more than one category has been assigned (e.g. `1|3|17`).
 
-If you have enabled the 'Primary Category Assignment' option then you can access the various attributes of the primary category and the ID of it's parent (or itself if it has no parent) by appending the 'primary_category' modifier to the single field_name variable tag:
+If you have enabled the 'Primary Category Assignment' option then you can access the various attributes of the primary category and the ID of it's parent (or itself if it has no parent) by appending the 'primary' modifier to the single field_name variable tag:
 
-- `{field_name:primary_category:id}`
-- `{field_name:primary_category:parent_id}`
-- `{field_name:primary_category:name}`
-- `{field_name:primary_category:url_title}`
-- `{field_name:primary_category:description}`
-- `{field_name:primary_category:image}`
+- `{field_name:primary:category_id}`
+- `{field_name:primary:category_parent_id}`
+- `{field_name:primary:category_name}`
+- `{field_name:primary:category_url_title}`
+- `{field_name:primary:category_description}`
+- `{field_name:primary:category_image}`
+- `{field_name:primary:category_custom_field_name}`
 
 You can also return the primary category ID using the modifier with no attribute specified:
 
-- `{field_name:primary_category}`
+- `{field_name:primary}`
 
 ### Variable Pair
 
