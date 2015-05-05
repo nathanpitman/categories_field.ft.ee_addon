@@ -1,4 +1,4 @@
-EE2.x Categories Field
+Categories Field for EE 2.x
 ======================
 
 ![Categories Field](/images/nf_categories_field.png?raw=true "Categories Field")
