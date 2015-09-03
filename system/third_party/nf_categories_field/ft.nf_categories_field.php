@@ -584,7 +584,17 @@ class Nf_categories_field_ft extends EE_Fieldtype {
         // If there's no tagdata (single tag) then return
         if (!$tagdata OR empty($tagdata))
         {
-            return is_array($categories) ? implode($settings['delimiter'], $categories) : $categories;
+
+            // If categories is an array flatten it using the specified delimiter
+            $categories = is_array($categories) ? implode($settings['delimiter'], $categories) : $categories;
+
+            // If a wrapper is specified then apply it
+            if (!empty($settings['wrapper'])) {
+                $categories = ($settings['wrapper'].$categories.$settings['wrapper']);
+            }
+
+            // Return
+            return $categories;
         }
 
         // Limit parameter
@@ -605,6 +615,8 @@ class Nf_categories_field_ft extends EE_Fieldtype {
             $parsed = substr($parsed, 0, -$params['backspace']);
         }
         unset($tagdata);
+
+        // Return
         return $parsed;
 
     }
