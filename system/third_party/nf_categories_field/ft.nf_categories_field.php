@@ -487,10 +487,17 @@ class Nf_categories_field_ft extends EE_Fieldtype {
         // Just to be sure...
         if (isset($this->settings['sync_cats']) AND $this->settings['sync_cats']) {
 
-            // Get currently assigned cats
-            $this->EE->db->select('cat_id')
-                ->where('entry_id', $this->settings['entry_id']);
-            $current_cats_array = $this->EE->db->get('category_posts')->result_array();
+            // Get groups into comma-delimited format for SQL query
+            $groups_for_sql = implode(",",$this->settings['groups']);
+		
+            // Get currently assigned cats with custom query
+			$sql = "SELECT cat_id 
+                    FROM exp_category_posts 
+                    WHERE entry_id = {$this->settings['entry_id']}
+						AND cat_id IN 
+                            (SELECT cat_id FROM exp_categories WHERE group_id IN({$groups_for_sql}) )";
+            $current_cats_array = $this->EE->db->query($sql)->result_array();
+            
             if (!empty($current_cats_array)) {
                 foreach($current_cats_array AS $current_cat) {
                     $current_cats[] = $current_cat['cat_id'];
